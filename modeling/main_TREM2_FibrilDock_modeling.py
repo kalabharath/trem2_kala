@@ -1,7 +1,4 @@
 # >>>>>>>>> copied code from AbTrimerFibril_TREM2dock_tryingnewmols.py <<<<<<<<<<<<<
-
-# Imports
-from __future__ import print_function
 import IMP
 import IMP.atom
 import IMP.isd
@@ -18,17 +15,17 @@ import IMP.pmi.io
 import IMP.pmi.io.crosslink
 
 
-def create_fibril_transforms(z_disp, len_proto):
+def create_fibril_transforms(z_displacement, len_protofilament):
 
     transforms = []
 
-    for t in range(1, len_proto):
+    for t in range(1, len_protofilament):
         if t % 2 == 0:  # even
-            trans_pos = IMP.algebra.Transformation3D(IMP.algebra.Vector3D(0, 0, ((t / 2) * z_disp)))
+            trans_pos = IMP.algebra.Transformation3D(IMP.algebra.Vector3D(0, 0, ((t / 2) * z_displacement)))
             transforms.append(trans_pos)
             print("Transforms:", t, " | ", trans_pos)
         else: # odd
-            trans_neg = IMP.algebra.Transformation3D(IMP.algebra.Vector3D(0, 0, ((-1 * t) / 2) * z_disp))
+            trans_neg = IMP.algebra.Transformation3D(IMP.algebra.Vector3D(0, 0, ((-1 * t) / 2) * z_displacement))
             transforms.append(trans_neg)
             print("Transforms:", t, " | ", trans_neg)
     return transforms
@@ -43,15 +40,15 @@ st = s.create_state()
 # ##Input Data####
 pdb_dir = "../data/pdb/"
 fasta_dir = "../data/fasta/"
-xl_data_BS3 = "../data/xl/BS3_inter.csv"  # Experimental cross-links Dset1 24 A long
-xl_data_NHSF = "../data/xl/NHSF_inter.csv"  # Experimental cross-links Dset2 20 A long
+xl_data_BS3 = "../data/xl/BS3_inter.csv"    # Experimental cross-links set-1 24 A long.
+xl_data_NHSF = "../data/xl/NHSF_inter.csv"  # Experimental cross-links set-2 20 A long.
 xl_weight = 1.0
 
 # Store the FASTA sequences in a dictionary
 sequences = IMP.pmi.topology.Sequences(fasta_dir + "TREM2_ABfibril.fasta")
 
 # _____ ACTIVE Abeta Trimer_______________________________________________________________
-# Create a molecule from 1 trimer (chain A) of the amyloid fibril (2LMP) 
+# Create a molecule from 1 trimer (chain A) of the amyloid fibril (2LMP)
 # & copy it to build the ACTIVE trimer
 
 Abeta = st.create_molecule("Abeta", sequence=sequences["Abeta40"], chain_id='A')
@@ -74,30 +71,42 @@ AbetaM.add_representation(AbetaM.get_non_atomic_residues(), resolutions=[1], col
 
 # ______Fibril extension____
 
-# Create the transforms needed to build up the fibril from symmetry z-disp translation
+# Create the transforms needed to build up the fibril from symmetry z-displacement translation
 
-fibril_transforms = create_fibril_transforms(z_disp=4.8, len_proto=5)
+fibril_transforms = create_fibril_transforms(z_displacement=4.8, len_protofilament=10)
 print('Transforms  || ', len(fibril_transforms), " || ", fibril_transforms)
 
 # Create a clone of the trimer fibril unit for every transform
 # Collect all trimer fibril units created in a list
+
 fibril_mols = [Abeta, AbetaG, AbetaM]
 protofil_mols = [[Abeta],[AbetaG],[AbetaM]]
+
 chains = ['A', 'G', 'M']
+additional_chains = ['B', 'C', 'D', 'E', 'F', 'H', 'I', 'J', 'K', 'L', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z','B', 'C', 'D', 'E', 'F', 'H', 'I', 'J', 'K', 'L', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z']
+count =0
 for i in range(0, len(chains)):
     for nc in range(len(fibril_transforms)):
-        clone = fibril_mols[i].create_clone(chains[i])  # chains[nc])
+        clone = fibril_mols[i].create_clone(additional_chains[count])  # chains[nc])
         protofil_mols[i].append(clone)
         fibril_mols.append(clone)
+        count += 1
 
 # ______TREM2 ECD__________________________________________________________________________
-# Create a molecule for 1 TREM2 ECD (based on 5UD7, ch. A)
-TREM2 = st.create_molecule('TREM2', sequence=sequences["TREM2"])
+# Create a molecule for 1 TREM2 Extra Cellular Domain (based on 5UD7, ch. A)
+trem2 = st.create_molecule('TREM2', sequence=sequences["TREM2"])
 
-T = TREM2.add_structure(pdb_dir + "TREM2_A.pdb",
+T = trem2.add_structure(pdb_dir + "TREM2_A.pdb",
                         chain_id='A',
                         offset=0)  # offset -18
-TREM2.add_representation(TREM2.get_atomic_residues(), resolutions=[1], color=0.5)
+trem2.add_representation(trem2.get_atomic_residues(), resolutions=[1], color=0.5)
+
+trem2_clones = [trem2]
+# clone two more molecules of TREM2 such that the stiochiometry is maintained
+for i in range(0, 2):
+    clone = trem2.create_clone(additional_chains[count])
+    count +=1
+    trem2_clones.append(clone)
 
 # _____ Build the system & degrees of freedom _______________________________________________
 root_hier = s.build()
@@ -117,7 +126,7 @@ crs = []
 
 # get a dictionary of the molecules in the system w/ KEY = molecule name
 moldict = st.get_molecules()
-# print(moldict)
+print(moldict)
 
 for molname in moldict:
     for mol in moldict[molname]:
@@ -168,19 +177,18 @@ print("|||||  All sym constraints added  |||||")
 out = IMP.pmi.output.Output()
 out.init_rmf("symmetry_test1.rmf3", hierarchies=[root_hier])
 out.write_rmf("symmetry_test1.rmf3")
-print(">>>>>>>>>    test frame 1 written")
+
 # -----------------------------ADD RESTRAINTS ------------------------------------
 
 # ______External Barrier Restraint__________________________________________________________________________
 # get the center of mass of the fibril
-Fibril_sel = IMP.atom.Selection(root_hier,
-                                molecule="Abeta")
-Fib_particles = Fibril_sel.get_selected_particles()
-if len(Fib_particles) == 0:
+Fibril_sel = IMP.atom.Selection(root_hier, molecule="Abeta")
+fib_particles = Fibril_sel.get_selected_particles()
+if len(fib_particles) == 0:
     print("COM not set up. Cannot select protein %s)" & (Abeta))
-print(Fib_particles)
+print(fib_particles)
 
-fibril_COM = IMP.atom.CenterOfMass.setup_particle(IMP.Particle(mdl), Fib_particles)
+fibril_COM = IMP.atom.CenterOfMass.setup_particle(IMP.Particle(mdl), fib_particles)
 fibril_COM_coor = IMP.core.XYZ(fibril_COM).get_coordinates()
 
 # set up an an external barrier sphere with radius equal to the length of the fibril from the center of mass to
@@ -198,7 +206,7 @@ output_objects.append(ev1)
 
 ev2 = IMP.pmi.restraints.stereochemistry.ExcludedVolumeSphere(included_objects=TREM2_mol,
                                                               other_objects=[fibril_mols],
-                                                              resolution=10)
+                                                              resolution=5)
 ev2.add_to_model()
 ev2.rs.set_weight(10.0)
 ev2.set_label('all')
@@ -229,19 +237,19 @@ xldb_NHSF = IMP.pmi.io.crosslink.CrossLinkDataBase()
 xldb_NHSF.create_set_from_file(file_name=xl_data_NHSF, converter=xldbkc)
 xlrN = IMP.pmi.restraints.crosslinking.CrossLinkingMassSpectrometryRestraint(
     root_hier=root_hier,  # Must pass the root hierarchy to the system
-    CrossLinkDataBase=xldb_NHSF,  # The crosslink database.
-    length=20,  # The crosslinker plus side chain length
-    resolution=1,  # The resolution at which to evaluate the crosslink
+    CrossLinkDataBase=xldb_NHSF,  # The cross-link database.
+    length=20,  # The cross-linker plus side chain length
+    resolution=1,  # The resolution at which to evaluate the cross-link
     slope=0.02,
-    label='NHSF',  # This adds a linear term to the scoring function to bias crosslinks towards each other
+    label='NHSF',  # This adds a linear term to the scoring function to bias cross-links towards each other
     weight=xl_weight)  # Scaling factor for the restraint score.
 xlrN.add_to_model()
 output_objects.append(xlrN)
 crosslink_restraints.append(xlrN)
 
 # ----------------------------- SAMPLING ------------------------------------
-for n in range(10):
-    outdir = "testsystem/run"
+for n in range(10): # run 10 independent runs over #no of replicas suggested by mpirun
+    outdir = "testsystem3/run"
     run_num = n + 1
     output = '/output'
     global_output_directory = outdir + str(run_num) + output
@@ -260,7 +268,7 @@ for n in range(10):
                                           monte_carlo_temperature=1.0,
                                           number_of_best_scoring_models=0,
                                           monte_carlo_steps=10,
-                                          number_of_frames=1000,
+                                          number_of_frames=50000,
                                           global_output_directory=global_output_directory)
     rex.execute_macro()
     n += 1
@@ -268,4 +276,3 @@ for n in range(10):
 out = IMP.pmi.output.Output()
 out.init_rmf("singleframe.rmf3", hierarchies=[root_hier])
 out.write_rmf("singleframe.rmf3")
-print(">>>>>>>>>    test frame 1 written")

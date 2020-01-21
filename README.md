@@ -11,4 +11,6 @@ TREM2:Abeta complex (in collaboration with DeGrado group)
 ![Haifan_desc](./TREM2_bill_outlook.png)
 
 Important points
-*Abeta structural fibril unit is chains A,G,M of the pdbid 2LMP.
+* Abeta structural fibril unit is chains A,G,M of the pdbid 2LMP.
+* The TREM2 Extra Cellular Domain is based on template 5UD7, ch. A.
+*
