@@ -35,6 +35,14 @@ AT = AnalysisTrajectories(out_dirs,
 gsms_A_dir = analys_dir+'GSMs_cl-1/sample_A/'
 gsms_B_dir = analys_dir+'GSMs_cl-1/sample_B/'
 
+check_dir = analys_dir+'GSMs_cl-1'
+print check_dir
+if os.path.isdir(gsms_A_dir):
+    print gsms_A_dir
+    exit()
+    os.rmdirs()
+
+
 AT.create_gsms_dir(gsms_A_dir)
 AT.create_gsms_dir(gsms_B_dir)
 

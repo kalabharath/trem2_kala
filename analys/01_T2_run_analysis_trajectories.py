@@ -16,7 +16,6 @@ import math
 import glob
 import sys
 import os
-
 sys.path.append('/home/kalabharath/Prion/PMI_analysis/pyext/src/')
 from analysis_trajectories import *
 
@@ -66,8 +65,8 @@ AT.set_analyze_XLs_restraint(XLs_cutoffs = XLs_cutoffs,
                              get_nuisances = False)
 AT.set_analyze_Connectivity_restraint()
 AT.set_analyze_Excluded_volume_restraint()
-#AT.set_analyze_score_only_restraint('barrier')
-#AT.set_analyze_EM_restraint()
+# AT.set_analyze_score_only_restraint('barrier')
+# AT.set_analyze_EM_restraint()
 AT.set_select_by_Total_score(50.0)
 
 # Read stat files
@@ -77,8 +76,8 @@ AT.read_models_info(XLs_cutoffs)
 #AT.get_Psi_stats()
 
 AT.hdbscan_clustering(['XLs_NHSF', 'XLs_BS3']) #, 'XLs_intra'])
-#AT.hdbscan_clustering(['EV_sum', 'XLs_NHSF_KST', 'XLs_NHSF_KKY', 'XLs_NHSF_Nter', 'XLs_NHSF_KH', 'XLs_BS3'])
-#AT.summarize_XLs_info(Multiple_XLs_restraints = True, ambiguous_XLs_restraint = True)
+# AT.hdbscan_clustering(['EV_sum', 'XLs_NHSF_KST', 'XLs_NHSF_KKY', 'XLs_NHSF_Nter', 'XLs_NHSF_KH', 'XLs_BS3'])
+# AT.summarize_XLs_info(Multiple_XLs_restraints = True, ambiguous_XLs_restraint = True)
 
 AT.summarize_sampling_info()
 exit()

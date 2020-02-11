@@ -38,4 +38,3 @@ o = IMP.pmi.output.Output()
 o.init_pdb(pdb_name,h_ref)
 o.write_pdb(pdb_name)
 del o
-

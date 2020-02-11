@@ -20,6 +20,8 @@ Changelog:
 2. 22/01/2020: Modified the representation to include the stoichiometry of the complex.  
 3. 29/01/2020: Revert back to non-stoichiometry run. Single TREM2 against fibril
                translate the system back to the superposition on TREM2.
+4. 10/02/2020: (1) Fix TREM2 sequence. (2) Longer Abeta Fibrils. (3) Achieve xl-satisfaction
+               > 90%. (4) Obtain optimum EV value 
 
 """
 
